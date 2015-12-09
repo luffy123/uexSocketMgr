@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexSocketMgr" version="3.0.3" build="3">
-        <info>3:修改直接点击发送DUP或发送TCP系统崩溃问题</info>
+        uexName="uexSocketMgr" version="3.0.4" build="4">
+        <info>4:添加设置编码格式的接口</info>
+        <build>3:修改直接点击发送DUP或发送TCP系统崩溃问题</build>
         <build>2:修改onData回调方法的参数</build>
         <build>1:修复内部检测网络状态的bug，添加组播地址的配置</build>
         <build>0:Socket功能插件</build>

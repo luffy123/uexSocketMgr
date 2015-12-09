@@ -9,5 +9,6 @@
         <method name="setTimeOut" />
         <method name="setInetAddressAndPort" />
         <method name="sendData" />
+        <method name="setCharset"/>
     </plugin>
 </uexplugins>

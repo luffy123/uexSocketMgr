@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-       <plugin
+    <plugin
         className="org.zywx.wbpalmstar.plugin.uexsocketmgr.EUExSocketMgr"
-        uexName="uexSocketMgr" >
-        <method name="createUDPSocket" />
-        <method name="createTCPSocket" />
-        <method name="closeSocket" />
-        <method name="setTimeOut" />
-        <method name="setInetAddressAndPort" />
-        <method name="sendData" />
+        uexName="uexSocketMgr">
+        <method name="createUDPSocket"/>
+        <method name="createTCPSocket"/>
+        <method name="closeSocket"/>
+        <method name="setTimeOut"/>
+        <method name="setInetAddressAndPort"/>
+        <method name="sendData"/>
+        <method name="setCharset"/>
     </plugin>
 </uexplugins>
