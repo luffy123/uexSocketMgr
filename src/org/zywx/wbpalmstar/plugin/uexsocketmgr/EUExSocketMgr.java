@@ -46,6 +46,7 @@ public class EUExSocketMgr extends EUExBase {
         if (parm.length == 3) {
             dataType = parm[2];
         }
+        setCharset(dataType);
         if (!BUtility.isNumeric(inOpCode)) {
             return;
         }
@@ -81,6 +82,7 @@ public class EUExSocketMgr extends EUExBase {
         if (parm.length == 2) {
             dataType = parm[1];
         }
+       setCharset(dataType);
         if (objectMap.containsKey(Integer.parseInt(inOpCode))
                 || !checkSetting()) {
             jsCallback(F_CALLBACK_NAME_CREATETCPSOCKET,
@@ -91,6 +93,12 @@ public class EUExSocketMgr extends EUExBase {
         objectMap.put(Integer.parseInt(inOpCode), new EUExSocket(F_TYEP_TCP, 0,
                 this, Integer.parseInt(inOpCode), Integer.parseInt(dataType)));
 
+    }
+
+    private void setCharset(String dataType){
+        if ("2".equals(dataType)){
+            EUExSocket.charset="gbk";
+        }
     }
 
     /**
