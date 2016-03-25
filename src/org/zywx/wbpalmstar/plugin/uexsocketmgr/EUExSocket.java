@@ -235,7 +235,7 @@ public class EUExSocket {
                     m_bufferedWriter = m_TCPsocket.getOutputStream();
                 }
                 byte[] data = null;
-                if (dataType == 0) {
+                if (dataType == 0||dataType==2) {
                     data = msg.getBytes(charset);
                 } else {
                     data = Base64.decode(msg);
@@ -252,7 +252,7 @@ public class EUExSocket {
         } else {
             byte[] data;
             try {
-                if (dataType == 0) {
+                if (dataType == 0||dataType==2) {
                     data = msg.getBytes(charset);
                 } else {
                     data = Base64.decode(msg);
@@ -315,7 +315,7 @@ public class EUExSocket {
                 byte[] getByte = m_bytestream.toByteArray();
                 m_bytestream.reset();
                 String s = "";
-                if (dataType == 0) {
+                if (dataType == 0||dataType==2) {
                     s = EncodingUtils.getString(getByte, charset);
                 } else {
 
@@ -335,7 +335,7 @@ public class EUExSocket {
                     String port = String.valueOf(rePacket.getPort());
                     String getData = null;
                     byte[] b = new byte[1];
-                    if (dataType == 0) {
+                    if (dataType == 0||dataType==2) {
                         getData = new String(rePacket.getData(), enc)
                                 .replaceAll(String.valueOf(((char) b[0])), "");
                     } else {

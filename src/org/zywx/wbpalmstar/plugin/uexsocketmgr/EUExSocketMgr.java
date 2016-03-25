@@ -183,7 +183,7 @@ public class EUExSocketMgr extends EUExBase {
      */
     public void sendData(String[] parm) {
         Log.i(tag, "sendData");
-        if (parm.length != 2) {
+        if (parm.length < 2) {
             return;
         }
         final String inOpCode = parm[0], inMsg = parm[1];
