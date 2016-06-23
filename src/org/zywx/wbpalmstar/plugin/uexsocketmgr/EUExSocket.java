@@ -177,10 +177,13 @@ public class EUExSocket {
      *
      * @param inRemoteAddress ip
      * @param inRemotePort    端口
+     * @param hasCallbackFun    是否有回调函数，有代表是执行插件4.0的接口
      * @return boolean
      */
     protected boolean setInetAddressAndPort(String inRemoteAddress,
-                                            String inRemotePort) {
+                                            String inRemotePort,
+                                            boolean hasCallbackFun) {
+        boolean flag = true;
         try {
             m_UDPRemoteAddress = InetAddress.getByName(inRemoteAddress);
             m_UDPRemotePort = Integer.parseInt(inRemotePort);
@@ -195,30 +198,43 @@ public class EUExSocket {
                             m_UDPRemoteAddress.getHostAddress(),
                             m_UDPRemotePort), mTimeOut);
                 }
+                // 4.x以下才会有下方回调
+                if (!hasCallbackFun) {
+                    m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
+                            m_opCode, EUExCallback.F_C_INT,
+                            EUExCallback.F_C_SUCCESS);
+                }
 
-                m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
-                        m_opCode, EUExCallback.F_C_INT,
-                        EUExCallback.F_C_SUCCESS);
+                flag = true;
             } else if (m_socketMgr.checkSetting()) {
-                m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
-                        m_opCode, EUExCallback.F_C_INT,
-                        EUExCallback.F_C_SUCCESS);
+                if (!hasCallbackFun) {
+                    m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
+                            m_opCode, EUExCallback.F_C_INT,
+                            EUExCallback.F_C_SUCCESS);
+                }
+                flag = true;
             } else {
-                m_socketMgr
-                        .jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
-                                m_opCode, EUExCallback.F_C_INT,
-                                EUExCallback.F_C_FAILED);
+                if (!hasCallbackFun) {
+                    m_socketMgr
+                            .jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
+                                    m_opCode, EUExCallback.F_C_INT,
+                                    EUExCallback.F_C_FAILED);
+                }
+                flag = false;
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             onClose();
             close();
-            m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
-                    m_opCode, EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+            if (!hasCallbackFun) {
+                m_socketMgr.jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
+                        m_opCode, EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+            }
             return false;
         }
         onMessage(1);
-        return true;
+        return flag;
     }
 
     /**
@@ -440,5 +456,10 @@ public class EUExSocket {
         }
 
     }
-
+    public MulticastSocket getUDPSocket() {
+        return m_UDPSocket;
+    }
+    public Socket getTCPsocket() {
+        return m_TCPsocket;
+    }
 }

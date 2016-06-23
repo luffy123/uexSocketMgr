@@ -38,9 +38,9 @@ public class EUExSocketMgr extends EUExBase {
      *
      * @return Socket 对象
      */
-    public void createUDPSocket(String[] parm) {
+    public boolean createUDPSocket(String[] parm) {
         if (parm.length < 2) {
-            return;
+            return false;
         }
         String inOpCode = parm[0], inPort = parm[1], dataType = "0";
         if (parm.length == 3) {
@@ -48,21 +48,27 @@ public class EUExSocketMgr extends EUExBase {
         }
         setCharset(dataType);
         if (!BUtility.isNumeric(inOpCode)) {
-            return;
+            return false;
         }
         if (objectMap.containsKey(Integer.parseInt(inOpCode))
                 || !checkSetting()) {
             jsCallback(F_CALLBACK_NAME_CREATEUDPSOCKET,
                     Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
                     EUExCallback.F_C_FAILED);
-            return;
+            return false;
         }
         if (inPort == null || inPort.length() == 0) {
             inPort = "0";
         }
-        objectMap.put(Integer.parseInt(inOpCode), new EUExSocket(F_TYEP_UDP,
+        EUExSocket socket = new EUExSocket(F_TYEP_UDP,
                 Integer.parseInt(inPort), this, Integer.parseInt(inOpCode),
-                Integer.parseInt(dataType), mContext));
+                Integer.parseInt(dataType), mContext);
+        if (null == socket.getUDPSocket()) {
+            return false;
+        }
+        objectMap.put(Integer.parseInt(inOpCode), socket);
+        return true;
+
     }
 
     /**
@@ -70,29 +76,33 @@ public class EUExSocketMgr extends EUExBase {
      *
      * @return Socket 对象
      */
-    public void createTCPSocket(String[] parm) {
+    public boolean createTCPSocket(String[] parm) {
         if (parm.length < 1) {
-            return;
+            return false;
         }
 
         String inOpCode = parm[0], dataType = "0";
         if (!BUtility.isNumeric(inOpCode)) {
-            return;
+            return false;
         }
         if (parm.length == 2) {
             dataType = parm[1];
         }
-       setCharset(dataType);
+        setCharset(dataType);
         if (objectMap.containsKey(Integer.parseInt(inOpCode))
                 || !checkSetting()) {
             jsCallback(F_CALLBACK_NAME_CREATETCPSOCKET,
                     Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
                     EUExCallback.F_C_FAILED);
-            return;
+            return false;
         }
-        objectMap.put(Integer.parseInt(inOpCode), new EUExSocket(F_TYEP_TCP, 0,
-                this, Integer.parseInt(inOpCode), Integer.parseInt(dataType)));
-
+        EUExSocket socket = new EUExSocket(F_TYEP_TCP, 0,
+                this, Integer.parseInt(inOpCode), Integer.parseInt(dataType));
+        if (null == socket.getTCPsocket()) {
+            return false;
+        }
+        objectMap.put(Integer.parseInt(inOpCode), socket);
+        return true;
     }
 
     private void setCharset(String dataType){
@@ -146,21 +156,43 @@ public class EUExSocketMgr extends EUExBase {
      * @return boolean
      */
     public void setInetAddressAndPort(String[] parm) {
-        if (parm.length != 3) {
+        if (parm.length < 3) {
             return;
         }
-        String inOpCode = parm[0], inRemoteAddress = parm[1], inRemotePort = parm[2];
+        final String inOpCode = parm[0], inRemoteAddress = parm[1], inRemotePort = parm[2];
         if (!BUtility.isNumeric(inOpCode)) {
             return;
         }
-        EUExSocket object = objectMap.get(Integer.parseInt(inOpCode));
+        String funcId = null;
+        if (parm.length == 4) {
+            funcId = parm[3];
+        }
+        boolean flag = false;
+        if (null != funcId) {
+            flag = true;
+        }
+        final boolean hasCallbackFun = flag;
+        final String funcIdTemp = funcId;
+        final EUExSocket object = objectMap.get(Integer.parseInt(inOpCode));
         if (object != null && checkSetting()) {
-            object.setInetAddressAndPort(inRemoteAddress, inRemotePort);
-
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    boolean flag = object.setInetAddressAndPort(inRemoteAddress, inRemotePort, hasCallbackFun);
+                    if (hasCallbackFun) {
+                        callbackToJs(Integer.parseInt(funcIdTemp), false, flag ? EUExCallback.F_C_SUCCESS : EUExCallback.F_C_FAILED);
+                    }
+                }
+            }.start();
         } else {
-            jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
-                    Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-                    EUExCallback.F_C_FAILED);
+            if (hasCallbackFun) {
+                callbackToJs(Integer.parseInt(funcId), false, EUExCallback.F_C_FAILED);
+            } else {
+                jsCallback(EUExSocketMgr.F_CALLBACK_NAME_CONNECTED,
+                        Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+                        EUExCallback.F_C_FAILED);
+            }
         }
     }
 
@@ -170,9 +202,9 @@ public class EUExSocketMgr extends EUExBase {
      * @return boolean
      */
     public void setCharset(String[] params) {
-       if (params!=null&&params.length>0){
-           EUExSocket.charset=params[0];
-       }
+        if (params!=null&&params.length>0){
+            EUExSocket.charset=params[0];
+        }
     }
 
 
@@ -190,6 +222,11 @@ public class EUExSocketMgr extends EUExBase {
         if (!BUtility.isNumeric(inOpCode)) {
             return;
         }
+        String funcTemp = null;
+        if (parm.length == 3) {
+            funcTemp = parm[2];
+        }
+        final String funcId = funcTemp;
         final EUExSocket object = objectMap.get(Integer.parseInt(inOpCode));
 
         new Thread(new Runnable() {
@@ -199,18 +236,30 @@ public class EUExSocketMgr extends EUExBase {
                 if (object != null) {
                     boolean result = object.sendData(inMsg);
                     if (checkSetting() && result) {
-                        jsCallback(F_CALLBACK_NAME_SENDDATA,
-                                Integer.parseInt(inOpCode),
-                                EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+                        if (null != funcId) {
+                            callbackToJs(Integer.parseInt(funcId), false, EUExCallback.F_C_SUCCESS);
+                        } else {
+                            jsCallback(F_CALLBACK_NAME_SENDDATA,
+                                    Integer.parseInt(inOpCode),
+                                    EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+                        }
                     } else {
-                        jsCallback(F_CALLBACK_NAME_SENDDATA,
-                                Integer.parseInt(inOpCode),
-                                EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+                        if (null != funcId) {
+                            callbackToJs(Integer.parseInt(funcId), false, EUExCallback.F_C_FAILED);
+                        } else {
+                            jsCallback(F_CALLBACK_NAME_SENDDATA,
+                                    Integer.parseInt(inOpCode),
+                                    EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+                        }
                     }
                 } else {
-                    jsCallback(F_CALLBACK_NAME_SENDDATA,
-                            Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-                            EUExCallback.F_C_FAILED);
+                    if (null != funcId) {
+                        callbackToJs(Integer.parseInt(funcId), false, EUExCallback.F_C_FAILED);
+                    } else {
+                        jsCallback(F_CALLBACK_NAME_SENDDATA,
+                                Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+                                EUExCallback.F_C_FAILED);
+                    }
                 }
             }
         }).start();
