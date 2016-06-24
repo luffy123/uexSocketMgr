@@ -2,8 +2,8 @@
 <uexplugins>
     <plugin
         uexName="uexSocketMgr" version="4.0.0" build="6">
-        <info>5:添加创建连接时设置编码参数</info>
-        <build>5:支持function传入</build>
+        <info>6:支持function传入</info>
+        <build>5:添加创建连接时设置编码参数</build>
         <build>4:添加设置编码格式的接口</build>
         <build>3:修改直接点击发送DUP或发送TCP系统崩溃问题</build>
         <build>2:修改onData回调方法的参数</build>
