@@ -45,6 +45,10 @@ public class EUExSocket {
 
     public static String charset="utf-8";
 
+    public String tcpOnStatusCallback;
+    public String tcpOnDataCallback;
+    public String udpOnDataCallback;
+
 
     public EUExSocket(int inType, int inLocalPort, EUExSocketMgr socketMgr,
                       int inOpCode, int inDataType) {
@@ -368,11 +372,16 @@ public class EUExSocket {
             } catch (InterruptedException el) {
                 el.printStackTrace();
             }
-            String js = SCRIPT_HEADER + "if("
-                    + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "){"
-                    + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "("
-                    + m_opCode + ")}";
-            m_socketMgr.onCallback(js);
+            //针对4.0插件
+            if (tcpOnDataCallback != null) {
+                m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), true, 1); // 1 代表连接中断
+            } else {
+                String js = SCRIPT_HEADER + "if("
+                        + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "){"
+                        + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "("
+                        + m_opCode + ")}";
+                m_socketMgr.onCallback(js);
+            }
             onClose();
             close();
             e.printStackTrace();
@@ -434,12 +443,25 @@ public class EUExSocket {
                 String data = getData(charset);
                 Log.i("socket", "received==" + data);
                 if (!TextUtils.isEmpty(data)) {
-                    String js = SCRIPT_HEADER + "if("
-                            + EUExSocketMgr.F_CALLBACK_NAME_SOCKETDATA + "){"
-                            + EUExSocketMgr.F_CALLBACK_NAME_SOCKETDATA + "("
-                            + m_opCode + ",'" + BUtility.transcoding(data)
-                            + "')}";
-                    m_socketMgr.onCallback(js);
+                    //String jsonStr = BUtility.transcoding(data);
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(data);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    if(BUtility.isNumeric(tcpOnDataCallback)) {
+                        m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), false, jsonObject);
+                    } else if (BUtility.isNumeric(udpOnDataCallback)) {
+                            m_socketMgr.callbackToJs(Integer.parseInt(udpOnDataCallback), false, jsonObject);
+                    } else {
+                        String js = SCRIPT_HEADER + "if("
+                                + EUExSocketMgr.F_CALLBACK_NAME_SOCKETDATA + "){"
+                                + EUExSocketMgr.F_CALLBACK_NAME_SOCKETDATA + "("
+                                + m_opCode + ",'" + BUtility.transcoding(data)
+                                + "')}";
+                        m_socketMgr.onCallback(js);
+                    }
                 } else {
                     String js = SCRIPT_HEADER + "if("
                             + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "){"

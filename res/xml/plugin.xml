@@ -10,5 +10,13 @@
         <method name="setInetAddressAndPort"/>
         <method name="sendData"/>
         <method name="setCharset"/>
+
+        <method name="createUDP" />
+        <method name="send" />
+        <method name="createTCP" />
+        <method name="connect" />
+        <method name="write" />
+        <method name="close" />
+
     </plugin>
 </uexplugins>
