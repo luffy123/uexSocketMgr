@@ -374,7 +374,7 @@ public class EUExSocket {
             }
             //针对4.0插件
             if (tcpOnDataCallback != null) {
-                m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), true, 1); // 1 代表连接中断
+                m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), false, 1); // 1 代表连接中断
             } else {
                 String js = SCRIPT_HEADER + "if("
                         + EUExSocketMgr.F_CALLBACK_NAME_DISCONNECTED + "){"
@@ -451,9 +451,9 @@ public class EUExSocket {
                         e.printStackTrace();
                     }
                     if(BUtility.isNumeric(tcpOnDataCallback)) {
-                        m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), false, jsonObject);
+                        m_socketMgr.callbackToJs(Integer.parseInt(tcpOnDataCallback), true, jsonObject);
                     } else if (BUtility.isNumeric(udpOnDataCallback)) {
-                            m_socketMgr.callbackToJs(Integer.parseInt(udpOnDataCallback), false, jsonObject);
+                            m_socketMgr.callbackToJs(Integer.parseInt(udpOnDataCallback), true, jsonObject);
                     } else {
                         String js = SCRIPT_HEADER + "if("
                                 + EUExSocketMgr.F_CALLBACK_NAME_SOCKETDATA + "){"
