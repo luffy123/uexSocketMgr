@@ -1,13 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexSocketMgr" version="4.0.0" build="6">
-        <info>6:支持function传入</info>
-        <build>5:添加创建连接时设置编码参数</build>
-        <build>4:添加设置编码格式的接口</build>
-        <build>3:修改直接点击发送DUP或发送TCP系统崩溃问题</build>
-        <build>2:修改onData回调方法的参数</build>
-        <build>1:修复内部检测网络状态的bug，添加组播地址的配置</build>
-        <build>0:Socket功能插件</build>
+        uexName="uexSocketMgr" version="4.0.0" build="0">
+        <info>0:支持function传入</info>
     </plugin>
 </uexplugins>
