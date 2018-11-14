@@ -40,7 +40,9 @@ repositories {
     }
 }
 dependencies {
-    compile ('org.appcan:engine:+:systemRelease@aar')
+//    compile ('org.appcan:engine:+:systemRelease@aar')
+    compile(name: 'Engine-system-release', ext: 'aar')
+    compile 'com.android.support:multidex:1.0.0'
 }
 
 android {
@@ -79,7 +81,9 @@ android {
     }
     defaultConfig {
         minSdkVersion 14
+        targetSdkVersion 26
         applicationId "org.zywx.wbpalmstar.widgetone.uexsocketmgr"
+        multiDexEnabled true
     }
 }
 

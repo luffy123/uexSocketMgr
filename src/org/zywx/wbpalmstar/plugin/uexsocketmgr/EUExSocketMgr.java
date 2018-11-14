@@ -200,7 +200,7 @@ public class EUExSocketMgr extends EUExBase {
                     @Override
                     public void run() {
                         try {
-                            socket.getTCPsocket().connect(new InetSocketAddress(host, Integer.parseInt(port)), timeout);
+                            socket.getTCPsocket().connect(new InetSocketAddress(host, new Double(Double.parseDouble(port)).intValue()), timeout); // "40000.0"转int之前报错
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
